@@ -6,7 +6,7 @@ import { useStore } from '../context/StoreContext';
 import { formatTime } from '../utils/orderHelpers';
 
 const Hero = () => {
-    const { storeStatus } = useStore();
+    const { storeStatus, loading } = useStore();
 
     return (
         <section style={{
@@ -144,12 +144,14 @@ const Hero = () => {
                         }}></div>
                         <div>
                             <p style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                                {storeStatus.isOpen ? 'Open Now' : 'Closed Now'}
+                                {loading ? 'Checking status...' : (storeStatus.isOpen ? 'Open Now' : 'Closed Now')}
                             </p>
                             <p style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>
-                                {storeStatus.isOpen
-                                    ? `${formatTime(storeStatus.openTime) || '10 AM'} - ${formatTime(storeStatus.closeTime) || '10 PM'}`
-                                    : 'Will open tomorrow'}
+                                {loading ? '---' : (
+                                    storeStatus.isOpen
+                                        ? `${formatTime(storeStatus.openTime) || 'Limited Hours'} - ${formatTime(storeStatus.closeTime) || 'Closing Soon'}`
+                                        : (storeStatus.message || 'Will open soon')
+                                )}
                             </p>
                         </div>
                     </div>
