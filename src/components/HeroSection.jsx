@@ -3,7 +3,7 @@ import { ShoppingBag, ArrowRight, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { useStore } from '../context/StoreContext';
-import { formatTime } from '../utils/orderHelpers';
+import { formatTimeDisplay } from '../utils/orderHelpers';
 
 const Hero = () => {
     const { storeStatus, loading } = useStore();
@@ -149,7 +149,7 @@ const Hero = () => {
                             <p style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>
                                 {loading ? '---' : (
                                     storeStatus.isOpen
-                                        ? `${formatTime(storeStatus.openTime) || 'Limited Hours'} - ${formatTime(storeStatus.closeTime) || 'Closing Soon'}`
+                                        ? `${formatTimeDisplay(storeStatus.openTime) || 'Limited Hours'} - ${formatTimeDisplay(storeStatus.closeTime) || 'Closing Soon'}`
                                         : (storeStatus.message || 'Will open soon')
                                 )}
                             </p>

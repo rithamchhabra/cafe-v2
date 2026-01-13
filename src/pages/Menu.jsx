@@ -260,21 +260,53 @@ const Menu = () => {
                     ))}
                 </div>
 
+                <style>
+                    {`
+                        .menu-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                            gap: 20px;
+                            padding: 0 10px;
+                        }
+                        @media (max-width: 768px) {
+                            .menu-grid {
+                                grid-template-columns: repeat(2, 1fr);
+                                gap: 10px;
+                            }
+                            .menu-item-card {
+                                padding: 10px !important;
+                            }
+                            .menu-item-image {
+                                height: 140px !important;
+                            }
+                            .menu-item-title {
+                                fontSize: 1rem !important;
+                            }
+                            .menu-item-price {
+                                fontSize: 1rem !important;
+                            }
+                            .menu-item-desc {
+                                fontSize: 0.8rem !important;
+                                display: -webkit-box;
+                                -webkit-line-clamp: 2;
+                                -webkit-box-orient: vertical;
+                                overflow: hidden;
+                                margin-bottom: 10px !important;
+                            }
+                        }
+                    `}
+                </style>
+
                 {/* Menu Grid */}
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: '20px',
-                    padding: '0 10px'
-                }}>
+                <div className="menu-grid">
                     {filteredItems.map(item => (
-                        <div key={item.id} className="glass-card animate-fade-in" style={{
+                        <div key={item.id} className="glass-card animate-fade-in menu-item-card" style={{
                             padding: '15px',
                             display: 'flex',
                             flexDirection: 'column',
                             transition: 'transform 0.3s ease'
                         }}>
-                            <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px', height: '220px', marginBottom: '15px' }}>
+                            <div className="menu-item-image" style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px', height: '220px', marginBottom: '15px' }}>
                                 <MediaViewer media={item.media} fallbackImage={item.image} itemName={item.name} />
                                 <div style={{
                                     position: 'absolute',
@@ -303,10 +335,10 @@ const Menu = () => {
 
                             <div style={{ flex: 1 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '5px' }}>
-                                    <h3 style={{ fontSize: '1.2rem', fontWeight: '700' }}>{item.name}</h3>
-                                    <span style={{ fontWeight: '800', color: 'var(--primary)', fontSize: '1.2rem' }}>₹{item.price}</span>
+                                    <h3 className="menu-item-title" style={{ fontSize: '1.2rem', fontWeight: '700' }}>{item.name}</h3>
+                                    <span className="menu-item-price" style={{ fontWeight: '800', color: 'var(--primary)', fontSize: '1.2rem' }}>₹{item.price}</span>
                                 </div>
-                                <p style={{ fontSize: '0.9rem', color: 'var(--text-light)', marginBottom: '20px' }}>{item.description}</p>
+                                <p className="menu-item-desc" style={{ fontSize: '0.9rem', color: 'var(--text-light)', marginBottom: '20px' }}>{item.description}</p>
                             </div>
 
                             <div style={{ marginTop: 'auto' }}>

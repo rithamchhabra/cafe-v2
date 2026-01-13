@@ -27,29 +27,15 @@ Please confirm my order once you receive the payment. Thank you!`;
     return encodeURIComponent(message);
 };
 
-export const formatTime = (timeStr) => {
-    if (!timeStr) return '';
-    const str = String(timeStr).trim();
-    if (!str) return '';
+export const formatTimeDisplay = (time24) => {
+    if (!time24) return '';
+    const [h, m] = time24.split(':');
+    if (!h || !m) return time24;
 
-    // Extract hours and minutes regardless of AM/PM in string
-    const match = str.match(/(\d{1,2})[\s:]+(\d{1,2})/);
-    if (!match) return str;
-
-    let h = parseInt(match[1]);
-    const m = match[2].padStart(2, '0');
-
-    // Handle case where it might already be AM/PM but needs standardization
-    const isPM = str.toLowerCase().includes('pm');
-    const isAM = str.toLowerCase().includes('am');
-
-    if (isPM && h < 12) h += 12;
-    if (isAM && h === 12) h = 0;
-
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    const h12 = h % 12 || 12;
-
-    return `${h12}${m !== '00' ? ':' + m : ''} ${ampm}`;
+    const hour = parseInt(h);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${m} ${ampm}`;
 };
 
 export const generateUPILink = (upiId, name, amount) => {
@@ -63,41 +49,28 @@ export const getUPIQRCode = (upiId, name, amount) => {
 };
 
 export const isStoreOpen = (openTime, closeTime) => {
-    if (!openTime || !closeTime) return true;
+    if (!openTime || !closeTime) return false;
 
-    const parseToMinutes = (str) => {
-        const s = String(str).trim();
-        const match = s.match(/(\d{1,2})[\s:]+(\d{1,2})/);
-        if (!match) return 0;
-
-        let h = parseInt(match[1]);
-        const m = parseInt(match[2]);
-
-        const isPM = s.toLowerCase().includes('pm');
-        const isAM = s.toLowerCase().includes('am');
-
-        if (isPM && h < 12) h += 12;
-        if (isAM && h === 12) h = 0;
-
+    // Helper to convert HH:mm to minutes since midnight
+    const toMinutes = (timeStr) => {
+        const [h, m] = timeStr.split(':').map(Number);
         return h * 60 + m;
     };
 
     const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-    const openTotalMinutes = parseToMinutes(openTime);
-    let closeTotalMinutes = parseToMinutes(closeTime);
+    const start = toMinutes(openTime);
+    const end = toMinutes(closeTime);
 
-    // Handle overnight closing (e.g., 6 PM to 2 AM)
-    if (closeTotalMinutes <= openTotalMinutes) {
-        if (closeTotalMinutes === 0) {
-            closeTotalMinutes = 24 * 60;
-        } else {
-            return currentTime >= openTotalMinutes || currentTime < closeTotalMinutes;
-        }
+    // Standard business hours (e.g., 09:00 to 22:00)
+    if (end > start) {
+        return currentMinutes >= start && currentMinutes < end;
     }
-
-    return currentTime >= openTotalMinutes && currentTime < closeTotalMinutes;
+    // Overnight business hours (e.g., 18:00 to 02:00)
+    else {
+        return currentMinutes >= start || currentMinutes < end;
+    }
 };
 
 export const sanitize = (text) => {

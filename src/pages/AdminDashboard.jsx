@@ -5,7 +5,7 @@ import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, order
 import { LogOut, LayoutDashboard, PlusCircle, Settings, ShoppingBag, Trash2, Edit2, X, Save, Loader2, Image as ImageIcon, FileSpreadsheet, Upload, Search, FileVideo, Link as LinkIcon, Plus, Info, Volume2, VolumeX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
-import { formatTime, sanitize, isStoreOpen } from '../utils/orderHelpers';
+import { formatTimeDisplay, sanitize, isStoreOpen } from '../utils/orderHelpers';
 
 const AdminDashboard = () => {
     const { logout, currentUser } = useAuth();
@@ -75,7 +75,7 @@ const AdminDashboard = () => {
                 openTime: sanitize(storeStatus.openTime || '10:00'),
                 closeTime: sanitize(storeStatus.closeTime || '22:00')
             }, { merge: true });
-            alert('Store timings saved successfully!');
+            alert(`Store timings saved! Open: ${storeStatus.openTime} - Close: ${storeStatus.closeTime}`);
         } catch (error) {
             console.error("Error saving timings:", error);
             alert('Failed to save timings. Please try again.');

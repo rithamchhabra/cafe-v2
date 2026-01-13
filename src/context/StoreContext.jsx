@@ -8,50 +8,66 @@ const StoreContext = createContext();
 export const useStore = () => useContext(StoreContext);
 
 export const StoreProvider = ({ children }) => {
+    // Default safe values
     const [settings, setSettings] = useState({
-        isOpen: true, // This is the manual toggle from Admin
+        isOpen: true, // Manual toggle override
         message: '',
         openTime: '10:00',
         closeTime: '22:00'
     });
-    const [loading, setLoading] = useState(true);
-    const [isActuallyOpen, setIsActuallyOpen] = useState(true);
 
+    const [loading, setLoading] = useState(true);
+    // Calculated status based on current time AND manual toggle
+    const [isActuallyOpen, setIsActuallyOpen] = useState(false);
+
+    // 1. Listen to Firestore changes
     useEffect(() => {
         const unsubscribe = onSnapshot(doc(db, 'settings', 'store'), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                setSettings(prev => ({ ...prev, ...data }));
-
-                // Immediate check after data load
-                const openStatus = data.isOpen !== false && isStoreOpen(data.openTime || '10:00', data.closeTime || '22:00');
-                setIsActuallyOpen(openStatus);
+                console.log("Store Settings Parsed:", data); // Debug log
+                setSettings(prev => ({
+                    ...prev,
+                    ...data
+                }));
             }
             setLoading(false);
         }, (error) => {
-            console.error("Error fetching store status:", error);
+            console.error("Error fetching store settings:", error);
             setLoading(false);
         });
 
-        return unsubscribe;
+        return () => unsubscribe();
     }, []);
 
-    // Effect to update status every minute
+    // 2. Periodically check time to update 'isActuallyOpen'
     useEffect(() => {
-        const timer = setInterval(() => {
-            const openStatus = settings.isOpen !== false && isStoreOpen(settings.openTime, settings.closeTime);
-            if (openStatus !== isActuallyOpen) {
-                setIsActuallyOpen(openStatus);
-            }
-        }, 30000); // Check every 30 seconds
+        const checkStatus = () => {
+            // Store is open ONLY if:
+            // 1. Manual toggle (isOpen) is TRUE
+            // 2. Current time is within openTime and closeTime
+            // Note: If isOpen is false (manually closed), it overrides the schedule.
+
+            const scheduleOpen = isStoreOpen(settings.openTime, settings.closeTime);
+            const finalStatus = settings.isOpen !== false && scheduleOpen;
+
+            setIsActuallyOpen(finalStatus);
+        };
+
+        // Run immediately when settings change
+        checkStatus();
+
+        // Run every 10 seconds to keep UI fresh
+        const timer = setInterval(checkStatus, 10000);
 
         return () => clearInterval(timer);
-    }, [settings, isActuallyOpen]);
+    }, [settings]);
 
     const storeStatus = {
         ...settings,
-        isOpen: isActuallyOpen,
-        isManualOpen: settings.isOpen // Keep reference to manual toggle
+        isOpen: isActuallyOpen,       // The calculated "real" status (used for UI badges)
+        scheduleOpen: isStoreOpen(settings.openTime, settings.closeTime), // Just the schedule status
+        isManualOpen: settings.isOpen // The manual toggle switch status
     };
 
     return (
