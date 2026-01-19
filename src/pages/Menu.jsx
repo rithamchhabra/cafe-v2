@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { db } from '../firebase/config';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { useStore } from '../context/StoreContext';
+import { getOptimizedImageUrl } from '../utils/imageHelpers';
 
 // Media Viewer Component for multi-image/video support
 const MediaViewer = ({ media, fallbackImage, itemName }) => {
@@ -59,7 +60,6 @@ const MediaViewer = ({ media, fallbackImage, itemName }) => {
         setTouchStart(null);
         setTouchEnd(null);
     };
-
     return (
         <div
             style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}
@@ -69,10 +69,17 @@ const MediaViewer = ({ media, fallbackImage, itemName }) => {
         >
             {currentMedia.type === 'image' ? (
                 <img
-                    src={currentMedia.url}
+                    src={getOptimizedImageUrl(currentMedia.url, 600)}
                     alt={`${itemName} ${currentIndex + 1}`}
                     onError={() => setIsError(true)}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'all 0.3s ease', objectPosition: `center ${currentMedia.yPos || 50}%` }}
+                    loading="lazy"
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'all 0.3s ease',
+                        objectPosition: `center ${currentMedia.yPos || 50}%`
+                    }}
                     className="media-fix"
                 />
             ) : (
@@ -134,7 +141,7 @@ const Menu = () => {
     const [menuItems, setMenuItems] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
-    const { cart, addToCart, updateQuantity, cartCount, cartTotal } = useCart();
+    const { cart, addToCart, updateQuantity, removeFromCart, cartCount, cartTotal } = useCart();
     const { storeStatus } = useStore();
 
     useEffect(() => {
@@ -267,11 +274,13 @@ const Menu = () => {
                             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
                             gap: 20px;
                             padding: 0 10px;
+                            justify-content: center;
                         }
                         @media (max-width: 768px) {
                             .menu-grid {
                                 grid-template-columns: repeat(2, 1fr);
                                 gap: 10px;
+                                padding: 0 5px;
                             }
                             .menu-item-card {
                                 padding: 10px !important;
@@ -354,7 +363,13 @@ const Menu = () => {
                                         opacity: storeStatus.isOpen ? 1 : 0.6
                                     }}>
                                         <button
-                                            onClick={() => updateQuantity(item.id, -1)}
+                                            onClick={() => {
+                                                if (getItemQuantity(item.id) <= 1) {
+                                                    removeFromCart(item.id);
+                                                } else {
+                                                    updateQuantity(item.id, -1);
+                                                }
+                                            }}
                                             style={{ color: 'var(--primary)' }}
                                             disabled={!storeStatus.isOpen}
                                         >
@@ -371,7 +386,7 @@ const Menu = () => {
                                     </div>
                                 ) : (
                                     <button
-                                        onClick={() => addToCart(item)}
+                                        onClick={() => addToCart({ ...item, price: parseFloat(item.price) || 0 })}
                                         className="btn-primary"
                                         style={{
                                             width: '100%',

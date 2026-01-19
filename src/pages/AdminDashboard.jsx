@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
-import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, writeBatch, setDoc } from 'firebase/firestore';
 import { LogOut, LayoutDashboard, PlusCircle, Settings, ShoppingBag, Trash2, Edit2, X, Save, Loader2, Image as ImageIcon, FileSpreadsheet, Upload, Search, FileVideo, Link as LinkIcon, Plus, Info, Volume2, VolumeX } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
@@ -53,7 +53,6 @@ const AdminDashboard = () => {
 
     const handleStatusToggle = async () => {
         try {
-            const { setDoc } = await import('firebase/firestore');
             await setDoc(doc(db, 'settings', 'store'), {
                 isOpen: !storeStatus.isOpen
             }, { merge: true });
@@ -70,7 +69,6 @@ const AdminDashboard = () => {
 
     const handleSaveTimings = async () => {
         try {
-            const { setDoc } = await import('firebase/firestore');
             await setDoc(doc(db, 'settings', 'store'), {
                 openTime: sanitize(storeStatus.openTime || '10:00'),
                 closeTime: sanitize(storeStatus.closeTime || '22:00')

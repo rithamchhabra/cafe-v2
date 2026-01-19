@@ -5,12 +5,21 @@ export const formatWhatsAppMessage = (cartItems, customerDetails, total, busines
 
     const upiLink = generateUPILink(businessDetails.upiId, businessDetails.name, total);
 
+    let orderStyle = '';
+    if (customerDetails.type === 'dining') {
+        orderStyle = `Style: Dining (Table: ${customerDetails.tableNumber || 'N/A'})`;
+    } else if (customerDetails.type === 'delivery') {
+        orderStyle = `Style: Home Delivery\nAddress: ${customerDetails.address || 'N/A'}`;
+    } else {
+        orderStyle = 'Style: Takeaway';
+    }
+
     const message = `Hello ${businessDetails.name}, I would like to place an order!
 
 - CUSTOMER DETAILS -
 Name: ${customerDetails.name}
 Phone: ${customerDetails.phone}
-${customerDetails.address ? `Address: ${customerDetails.address}` : 'Style: Takeaway'}
+${orderStyle}
 
 - ORDER SUMMARY -
 ${itemsText}

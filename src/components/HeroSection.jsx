@@ -124,6 +124,8 @@ const Hero = () => {
                                 display: 'block',
                                 boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
                             }}
+                            fetchPriority="high"
+                            loading="eager"
                         />
                     </div>
                     {/* Floating badge */}

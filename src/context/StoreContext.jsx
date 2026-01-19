@@ -3,7 +3,15 @@ import { db } from '../firebase/config';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { isStoreOpen } from '../utils/orderHelpers';
 
-const StoreContext = createContext();
+const StoreContext = createContext({
+    storeStatus: {
+        isOpen: false,
+        message: "",
+        openTime: "09:00",
+        closeTime: "22:00"
+    },
+    loading: true
+});
 
 export const useStore = () => useContext(StoreContext);
 
@@ -25,7 +33,7 @@ export const StoreProvider = ({ children }) => {
         const unsubscribe = onSnapshot(doc(db, 'settings', 'store'), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                console.log("Store Settings Parsed:", data); // Debug log
+                // console.log("Store Settings Parsed:", data); // Debug log
                 setSettings(prev => ({
                     ...prev,
                     ...data
